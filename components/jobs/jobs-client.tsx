@@ -14,6 +14,7 @@ import { Select } from "@/components/ui/select";
 import { Pagination } from "@/components/ui/pagination";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { apiFetch } from "@/lib/api/client-fetch";
+import { formatLpaRange } from "@/lib/jobs/salary";
 import { withSearchParams } from "@/lib/utils";
 import type { ApiListResult, Job } from "@/lib/types/models";
 
@@ -233,6 +234,12 @@ export function JobsClient() {
                   key: "location",
                   title: "Location",
                   render: (item) => item.location,
+                },
+                {
+                  key: "salary",
+                  title: "CTC",
+                  render: (item) =>
+                    formatLpaRange(item.salaryRange.min, item.salaryRange.max),
                 },
                 {
                   key: "status",

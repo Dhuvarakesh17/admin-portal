@@ -86,6 +86,8 @@ export function ApplicationDetailsClient({
     return <Card>Loading application...</Card>;
   }
 
+  const resumeHref = application.resumeUrl || application.resumePath;
+
   return (
     <div>
       <PageHeader
@@ -97,23 +99,83 @@ export function ApplicationDetailsClient({
           <h2 className="font-display text-lg font-semibold">
             Candidate Profile
           </h2>
-          <p className="mt-2 text-sm">
-            Resume:{" "}
-            {application.resumeUrl ? (
-              <a className="underline" href={application.resumeUrl}>
-                Open
-              </a>
+          <div className="mt-3 grid gap-2 text-sm">
+            <p>
+              <strong>Applied Role:</strong> {application.role || "N/A"}
+            </p>
+            <p>
+              <strong>Status:</strong> <span className="capitalize">{application.status}</span>
+            </p>
+            <p>
+              <strong>Name:</strong> {application.candidateName || "N/A"}
+            </p>
+            <p>
+              <strong>Email:</strong> {application.candidateEmail || "N/A"}
+            </p>
+            <p>
+              <strong>Phone:</strong> {application.candidatePhone || "N/A"}
+            </p>
+            <p>
+              <strong>City:</strong> {application.city || "N/A"}
+            </p>
+            <p>
+              <strong>LinkedIn:</strong> {application.linkedinUrl || "N/A"}
+            </p>
+            <p>
+              <strong>Portfolio:</strong> {application.portfolioUrl || "N/A"}
+            </p>
+            <p>
+              <strong>Current Role:</strong> {application.currentRole || "N/A"}
+            </p>
+            <p>
+              <strong>Current CTC:</strong> {application.currentCtc || "N/A"}
+            </p>
+            <p>
+              <strong>Expected CTC:</strong> {application.expectedCtc || "N/A"}
+            </p>
+            <p>
+              <strong>Experience:</strong> {application.totalExperience || "N/A"}
+            </p>
+            <p>
+              <strong>Notice Period:</strong> {application.noticePeriod || "N/A"}
+            </p>
+            <p>
+              <strong>Source:</strong> {application.heardFrom || application.source || "N/A"}
+            </p>
+            <p>
+              <strong>Referral:</strong> {application.referralName || application.referral || "N/A"}
+            </p>
+            <p>
+              <strong>Applied At:</strong> {new Date(application.createdAt).toLocaleString()}
+            </p>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-[var(--color-border)] p-3">
+            <p className="text-sm font-medium">Resume</p>
+            {resumeHref ? (
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
+                <a className="underline" href={resumeHref} target="_blank" rel="noreferrer">
+                  Open
+                </a>
+                <a className="underline" href={resumeHref} download>
+                  Download
+                </a>
+                <span className="text-xs text-[var(--color-muted)] break-all">
+                  {application.resumePath || application.resumeUrl}
+                </span>
+              </div>
             ) : (
-              "N/A"
+              <p className="mt-2 text-sm">N/A</p>
             )}
-          </p>
-          <p className="mt-2 text-sm">
-            Cover Letter: {application.coverLetter || "N/A"}
-          </p>
-          <p className="mt-2 text-sm">Source: {application.source || "N/A"}</p>
-          <p className="mt-2 text-sm">
-            Referral: {application.referral || "N/A"}
-          </p>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-[var(--color-border)] p-3">
+            <p className="text-sm font-medium">Cover Letter</p>
+            <p className="mt-2 text-sm whitespace-pre-wrap">
+              {application.coverLetter || "N/A"}
+            </p>
+          </div>
+
           <div className="mt-3 flex flex-wrap gap-2">
             {application.skills.map((skill) => (
               <span
@@ -123,6 +185,19 @@ export function ApplicationDetailsClient({
                 {skill}
               </span>
             ))}
+          </div>
+
+          <div className="mt-4 rounded-lg border border-[var(--color-border)] p-3">
+            <p className="text-sm font-medium">Internal Notes</p>
+            <ul className="mt-2 space-y-1 text-sm">
+              {application.notes.length ? (
+                application.notes.map((item, index) => (
+                  <li key={`${item}-${index}`}>{item}</li>
+                ))
+              ) : (
+                <li className="text-[var(--color-muted)]">No internal notes yet.</li>
+              )}
+            </ul>
           </div>
         </Card>
 

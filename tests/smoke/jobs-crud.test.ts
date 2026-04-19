@@ -54,7 +54,7 @@ describe("jobs CRUD route", () => {
         workMode: "remote",
         experience: "3+ years",
         employmentType: "full_time",
-        salaryRange: { min: 50000, max: 90000, currency: "USD" },
+        salaryRange: { min: 5, max: 9, currency: "INR" },
         openings: 2,
         status: "draft",
       }),
@@ -66,5 +66,7 @@ describe("jobs CRUD route", () => {
     expect(response.status).toBe(201);
     expect(payload.ok).toBe(true);
     expect(payload.data.title).toBe("Frontend Engineer");
+    expect(payload.data.salaryRange.min).toBe(5);
+    expect(payload.data.salaryRange.max).toBe(9);
   });
 });

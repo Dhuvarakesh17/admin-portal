@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { TextArea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api/client-fetch";
+import { formatLpaRange } from "@/lib/jobs/salary";
 import { toStringList } from "@/lib/utils";
 import type { Job } from "@/lib/types/models";
 
@@ -25,9 +26,8 @@ const initialForm = {
   workMode: "remote",
   experience: "2+ years",
   employmentType: "full_time",
-  salaryMin: "40000",
-  salaryMax: "80000",
-  salaryCurrency: "USD",
+  salaryMinLpa: "4",
+  salaryMaxLpa: "8",
   openings: "1",
   status: "draft",
 };
@@ -61,9 +61,8 @@ export function JobEditor({
           workMode: job.workMode,
           experience: job.experience,
           employmentType: job.employmentType,
-          salaryMin: String(job.salaryRange.min),
-          salaryMax: String(job.salaryRange.max),
-          salaryCurrency: job.salaryRange.currency,
+          salaryMinLpa: String(job.salaryRange.min),
+          salaryMaxLpa: String(job.salaryRange.max),
           openings: String(job.openings),
           status: job.status,
         });
@@ -89,9 +88,9 @@ export function JobEditor({
       experience: form.experience,
       employmentType: form.employmentType,
       salaryRange: {
-        min: Number(form.salaryMin),
-        max: Number(form.salaryMax),
-        currency: form.salaryCurrency,
+        min: Number(form.salaryMinLpa),
+        max: Number(form.salaryMaxLpa),
+        currency: "INR",
       },
       openings: Number(form.openings),
       status: form.status,
@@ -129,7 +128,7 @@ export function JobEditor({
     <div>
       <PageHeader
         title={mode === "create" ? "Create Job" : "Edit Job"}
-        subtitle="Define role details, pipeline visibility and compensation"
+        subtitle="Define role details, pipeline visibility and CTC (LPA)"
       />
       <form onSubmit={onSubmit} className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -221,28 +220,27 @@ export function JobEditor({
             <div className="grid grid-cols-3 gap-2">
               <Input
                 type="number"
-                placeholder="Salary Min"
-                value={form.salaryMin}
+                placeholder="Min CTC (LPA)"
+                value={form.salaryMinLpa}
                 onChange={(e) =>
-                  setForm({ ...form, salaryMin: e.target.value })
+                  setForm({ ...form, salaryMinLpa: e.target.value })
                 }
               />
               <Input
                 type="number"
-                placeholder="Salary Max"
-                value={form.salaryMax}
+                placeholder="Max CTC (LPA)"
+                value={form.salaryMaxLpa}
                 onChange={(e) =>
-                  setForm({ ...form, salaryMax: e.target.value })
+                  setForm({ ...form, salaryMaxLpa: e.target.value })
                 }
               />
-              <Input
-                placeholder="Currency"
-                value={form.salaryCurrency}
-                onChange={(e) =>
-                  setForm({ ...form, salaryCurrency: e.target.value })
-                }
-              />
+              <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-muted)]">
+                Stored as INR
+              </div>
             </div>
+            <p className="text-xs text-[var(--color-muted)]">
+              Display preview: {formatLpaRange(form.salaryMinLpa, form.salaryMaxLpa)}
+            </p>
             <Input
               type="number"
               placeholder="Openings"

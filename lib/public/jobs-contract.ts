@@ -1,4 +1,5 @@
 import type { Job } from "@/lib/types/models";
+import { formatLpaRange } from "@/lib/jobs/salary";
 
 export type PublicJob = {
   id: string;
@@ -82,39 +83,8 @@ function toEmploymentType(value: Job["employmentType"]): PublicJob["type"] {
   return "Full-time";
 }
 
-function formatCurrencyValue(value: number, currency: string) {
-  if (currency.toUpperCase() === "INR") {
-    return `INR ${value.toLocaleString("en-IN")}`;
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
 function toSalaryRange(job: Job) {
-  const min = Number(job.salaryRange.min);
-  const max = Number(job.salaryRange.max);
-  const currency = String(job.salaryRange.currency || "USD");
-
-  const hasMin = Number.isFinite(min) && min > 0;
-  const hasMax = Number.isFinite(max) && max > 0;
-
-  if (!hasMin && !hasMax) {
-    return "Salary based on experience";
-  }
-
-  if (hasMin && hasMax) {
-    return `${formatCurrencyValue(min, currency)} - ${formatCurrencyValue(max, currency)}`;
-  }
-
-  if (hasMin) {
-    return `From ${formatCurrencyValue(min, currency)}`;
-  }
-
-  return `Up to ${formatCurrencyValue(max, currency)}`;
+  return formatLpaRange(job.salaryRange.min, job.salaryRange.max);
 }
 
 function toPostedDaysAgo(job: Job) {

@@ -10,6 +10,8 @@ export type ApplicationQuery = {
   page: number;
   pageSize: number;
   search?: string;
+  candidateName?: string;
+  candidateEmail?: string;
   role?: string;
   status?: ApplicationStatus;
   sort?: "latest" | "oldest";
@@ -156,16 +158,49 @@ function mapRowToApplication(
         "",
       ),
     ),
+    candidatePhone:
+      String(pickValue(row, ["candidate_phone", "phone"], "")) || undefined,
+    city: String(pickValue(row, ["city"], "")) || undefined,
+    linkedinUrl:
+      String(
+        pickValue(row, ["linkedin_url", "linkedin", "linkedinUrl"], ""),
+      ) || undefined,
+    portfolioUrl:
+      String(
+        pickValue(row, ["portfolio_url", "portfolio", "portfolioUrl"], ""),
+      ) || undefined,
+    currentRole:
+      String(pickValue(row, ["current_role", "currentRole"], "")) ||
+      undefined,
+    currentCtc:
+      String(pickValue(row, ["current_ctc", "currentCtc"], "")) || undefined,
+    expectedCtc:
+      String(pickValue(row, ["expected_ctc", "expectedCtc"], "")) ||
+      undefined,
+    totalExperience:
+      String(
+        pickValue(row, ["experience_years", "total_experience", "experience"], ""),
+      ) || undefined,
+    noticePeriod:
+      String(pickValue(row, ["notice_period", "noticePeriod"], "")) ||
+      undefined,
     role: String(
       pickValue(row, ["role", "job_role", "position", "job_title"], ""),
     ),
     resumeUrl:
       String(pickValue(row, ["resume_url", "resumeUrl"], "")) || undefined,
+    resumePath:
+      String(pickValue(row, ["resume_path", "resumePath"], "")) || undefined,
     coverLetter:
       String(pickValue(row, ["cover_letter", "coverLetter"], "")) || undefined,
     skills: asStringArray(pickValue(row, ["skills"], [])),
+    heardFrom:
+      String(pickValue(row, ["heard_from", "heardFrom"], "")) || undefined,
     source: String(pickValue(row, ["source"], "")) || undefined,
     referral: String(pickValue(row, ["referral"], "")) || undefined,
+    referralName:
+      String(pickValue(row, ["referral_name", "referralName"], "")) ||
+      undefined,
     status: pickValue(
       row,
       [getStatusColumn(), "status"],
@@ -218,7 +253,31 @@ function applyFilters(
 
   return list.filter((item) => {
     if (query.status && item.status !== query.status) return false;
-    if (query.role && item.role !== query.role) return false;
+
+    if (
+      query.role &&
+      item.role.toLowerCase() !== query.role.trim().toLowerCase()
+    ) {
+      return false;
+    }
+
+    if (
+      query.candidateName &&
+      !item.candidateName
+        .toLowerCase()
+        .includes(query.candidateName.trim().toLowerCase())
+    ) {
+      return false;
+    }
+
+    if (
+      query.candidateEmail &&
+      !item.candidateEmail
+        .toLowerCase()
+        .includes(query.candidateEmail.trim().toLowerCase())
+    ) {
+      return false;
+    }
 
     if (search) {
       const haystack = [item.candidateName, item.candidateEmail, item.role]

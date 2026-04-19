@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { ApiListResult, Job, JobStatus } from "@/lib/types/models";
+import { toInrFromLpa, toLpaFromStored } from "@/lib/jobs/salary";
 
 export type JobQuery = {
   page: number;
@@ -29,7 +30,7 @@ const seedJobs: Job[] = [
     workMode: "remote",
     experience: "3+ years",
     employmentType: "full_time",
-    salaryRange: { min: 50000, max: 90000, currency: "USD" },
+    salaryRange: { min: 5, max: 9, currency: "INR" },
     openings: 2,
     status: "active",
     archivedAt: null,
@@ -50,7 +51,7 @@ const seedJobs: Job[] = [
     workMode: "hybrid",
     experience: "2+ years",
     employmentType: "full_time",
-    salaryRange: { min: 45000, max: 80000, currency: "USD" },
+    salaryRange: { min: 4.5, max: 8, currency: "INR" },
     openings: 1,
     status: "draft",
     archivedAt: null,
@@ -214,7 +215,10 @@ function mapRowToJob(row: Partial<JobRow> & Record<string, unknown>): Job {
     row.salary_currency ??
     (typeof salaryRangeMaybe.currency === "string"
       ? salaryRangeMaybe.currency
-      : "USD");
+      : "INR");
+
+  const minLpa = toLpaFromStored(salaryMin, String(salaryCurrency));
+  const maxLpa = toLpaFromStored(salaryMax, String(salaryCurrency));
 
   return {
     id: String(row.id ?? ""),
@@ -230,9 +234,9 @@ function mapRowToJob(row: Partial<JobRow> & Record<string, unknown>): Job {
     experience: String(row.experience ?? ""),
     employmentType: normalizeEmploymentTypeFromRow(row.employment_type),
     salaryRange: {
-      min: Number(salaryMin),
-      max: Number(salaryMax),
-      currency: String(salaryCurrency),
+      min: minLpa,
+      max: maxLpa,
+      currency: "INR",
     },
     openings: Number(row.openings ?? 1),
     status: (row.status as JobStatus) ?? "draft",
@@ -261,9 +265,9 @@ function mapJobToRow(
     work_mode: job.workMode,
     experience: normalizeExperienceForWrite(job.experience),
     employment_type: normalizeEmploymentTypeForWrite(job.employmentType),
-    salary_min: job.salaryRange.min,
-    salary_max: job.salaryRange.max,
-    salary_currency: job.salaryRange.currency,
+    salary_min: toInrFromLpa(job.salaryRange.min),
+    salary_max: toInrFromLpa(job.salaryRange.max),
+    salary_currency: "INR",
     openings: job.openings,
     status: job.status,
     archived_at: job.archivedAt ?? null,
@@ -283,6 +287,19 @@ function cloneJob(job: Job, overrides: Partial<Job> = {}): Job {
     responsibilities: overrides.responsibilities ?? [...job.responsibilities],
     requirements: overrides.requirements ?? [...job.requirements],
     skills: overrides.skills ?? [...job.skills],
+  };
+}
+
+function normalizeJobSalaryLpa(
+  input: Omit<Job, "id" | "createdAt" | "updatedAt" | "updatedBy">,
+) {
+  return {
+    ...input,
+    salaryRange: {
+      min: toLpaFromStored(input.salaryRange.min, input.salaryRange.currency),
+      max: toLpaFromStored(input.salaryRange.max, input.salaryRange.currency),
+      currency: "INR",
+    },
   };
 }
 
@@ -449,6 +466,7 @@ export async function createJob(
   input: Omit<Job, "id" | "createdAt" | "updatedAt" | "updatedBy">,
   actor = "admin",
 ) {
+  const normalizedInput = normalizeJobSalaryLpa(input);
   const supabase = getSupabaseClient();
   if (!supabase && isSupabaseSyncRequired()) {
     throw new Error(
@@ -456,7 +474,7 @@ export async function createJob(
     );
   }
   if (supabase) {
-    const payload = mapJobToRow(input, actor);
+    const payload = mapJobToRow(normalizedInput, actor);
     let useUpsert = shouldUpsertOnCreate();
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -490,7 +508,7 @@ export async function createJob(
 
   const createdAt = now();
   const job: Job = {
-    ...input,
+    ...normalizedInput,
     id: `job-${randomUUID()}`,
     createdAt,
     updatedAt: createdAt,
@@ -505,6 +523,7 @@ export async function updateJob(
   input: Omit<Job, "id" | "createdAt" | "updatedAt" | "updatedBy">,
   actor = "admin",
 ) {
+  const normalizedInput = normalizeJobSalaryLpa(input);
   const supabase = getSupabaseClient();
   if (!supabase && isSupabaseSyncRequired()) {
     throw new Error(
@@ -512,7 +531,7 @@ export async function updateJob(
     );
   }
   if (supabase) {
-    const payload = mapJobToRow(input, actor);
+    const payload = mapJobToRow(normalizedInput, actor);
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
       const { data, error } = await supabase
@@ -544,7 +563,7 @@ export async function updateJob(
   if (!existing) return null;
 
   const updated = cloneJob(existing, {
-    ...input,
+    ...normalizedInput,
     updatedAt: now(),
     updatedBy: actor,
   });

@@ -49,12 +49,24 @@ export interface CandidateApplication extends AuditTrail {
   id: string;
   candidateName: string;
   candidateEmail: string;
+  candidatePhone?: string;
+  city?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  currentRole?: string;
+  currentCtc?: string;
+  expectedCtc?: string;
+  totalExperience?: string;
+  noticePeriod?: string;
   role: string;
   resumeUrl?: string;
+  resumePath?: string;
   coverLetter?: string;
   skills: string[];
+  heardFrom?: string;
   source?: string;
   referral?: string;
+  referralName?: string;
   status: ApplicationStatus;
   notes: string[];
   comments: Array<{

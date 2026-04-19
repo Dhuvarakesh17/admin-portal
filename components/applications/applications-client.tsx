@@ -39,6 +39,8 @@ export function ApplicationsClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [candidateName, setCandidateName] = useState("");
+  const [candidateEmail, setCandidateEmail] = useState("");
   const [status, setStatus] = useState("");
   const [role, setRole] = useState("");
   const [sort, setSort] = useState<"latest" | "oldest">("latest");
@@ -48,13 +50,15 @@ export function ApplicationsClient() {
     () =>
       withSearchParams("/api/applications", {
         search,
+        candidateName,
+        candidateEmail,
         status,
         role,
         page,
         pageSize: 10,
         sort,
       }),
-    [search, status, role, sort, page],
+    [search, candidateName, candidateEmail, status, role, sort, page],
   );
 
   const load = useCallback(() => {
@@ -117,6 +121,22 @@ export function ApplicationsClient() {
           onChange={(e) => {
             setPage(1);
             setSearch(e.target.value);
+          }}
+        />
+        <Input
+          placeholder="Candidate name"
+          value={candidateName}
+          onChange={(e) => {
+            setPage(1);
+            setCandidateName(e.target.value);
+          }}
+        />
+        <Input
+          placeholder="Candidate email"
+          value={candidateEmail}
+          onChange={(e) => {
+            setPage(1);
+            setCandidateEmail(e.target.value);
           }}
         />
         <Select

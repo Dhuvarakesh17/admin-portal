@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const auth = await requireApiSession(["admin"]);
   if (!auth.ok) return auth.response;
 
-  const protectionError = await requireMutationProtection(request);
+  const protectionError = await requireMutationProtection();
   if (protectionError) return protectionError;
 
   try {

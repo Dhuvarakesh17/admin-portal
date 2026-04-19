@@ -13,9 +13,9 @@ export const jobSchema = z.object({
   experience: z.string().min(2),
   employmentType: z.enum(["full_time", "part_time", "contract", "internship"]),
   salaryRange: z.object({
-    min: z.number().nonnegative(),
-    max: z.number().nonnegative(),
-    currency: z.string().length(3),
+    min: z.number().nonnegative().max(200),
+    max: z.number().nonnegative().max(200),
+    currency: z.string().length(3).optional().default("INR"),
   }),
   openings: z.number().int().positive(),
   status: z.enum(["draft", "active", "closed"]),
