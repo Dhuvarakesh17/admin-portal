@@ -1,10 +1,13 @@
 import { ApiClientError } from "@/lib/api/errors";
 
 function getBaseUrl() {
-  const value = process.env.JB_PORTAL_ADMIN_API_BASE_URL;
-  if (!value) {
-    throw new ApiClientError("Missing JB_PORTAL_ADMIN_API_BASE_URL", 500);
-  }
+  const value =
+    process.env.JB_PORTAL_ADMIN_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.NODE_ENV === "production"
+      ? "https://creinx-careers.vercel.app"
+      : "http://localhost:3000");
+
   return value;
 }
 

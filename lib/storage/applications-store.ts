@@ -162,24 +162,25 @@ function mapRowToApplication(
       String(pickValue(row, ["candidate_phone", "phone"], "")) || undefined,
     city: String(pickValue(row, ["city"], "")) || undefined,
     linkedinUrl:
-      String(
-        pickValue(row, ["linkedin_url", "linkedin", "linkedinUrl"], ""),
-      ) || undefined,
+      String(pickValue(row, ["linkedin_url", "linkedin", "linkedinUrl"], "")) ||
+      undefined,
     portfolioUrl:
       String(
         pickValue(row, ["portfolio_url", "portfolio", "portfolioUrl"], ""),
       ) || undefined,
     currentRole:
-      String(pickValue(row, ["current_role", "currentRole"], "")) ||
-      undefined,
+      String(pickValue(row, ["current_role", "currentRole"], "")) || undefined,
     currentCtc:
       String(pickValue(row, ["current_ctc", "currentCtc"], "")) || undefined,
     expectedCtc:
-      String(pickValue(row, ["expected_ctc", "expectedCtc"], "")) ||
-      undefined,
+      String(pickValue(row, ["expected_ctc", "expectedCtc"], "")) || undefined,
     totalExperience:
       String(
-        pickValue(row, ["experience_years", "total_experience", "experience"], ""),
+        pickValue(
+          row,
+          ["experience_years", "total_experience", "experience"],
+          "",
+        ),
       ) || undefined,
     noticePeriod:
       String(pickValue(row, ["notice_period", "noticePeriod"], "")) ||

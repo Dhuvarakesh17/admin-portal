@@ -104,7 +104,8 @@ export function ApplicationDetailsClient({
               <strong>Applied Role:</strong> {application.role || "N/A"}
             </p>
             <p>
-              <strong>Status:</strong> <span className="capitalize">{application.status}</span>
+              <strong>Status:</strong>{" "}
+              <span className="capitalize">{application.status}</span>
             </p>
             <p>
               <strong>Name:</strong> {application.candidateName || "N/A"}
@@ -134,19 +135,24 @@ export function ApplicationDetailsClient({
               <strong>Expected CTC:</strong> {application.expectedCtc || "N/A"}
             </p>
             <p>
-              <strong>Experience:</strong> {application.totalExperience || "N/A"}
+              <strong>Experience:</strong>{" "}
+              {application.totalExperience || "N/A"}
             </p>
             <p>
-              <strong>Notice Period:</strong> {application.noticePeriod || "N/A"}
+              <strong>Notice Period:</strong>{" "}
+              {application.noticePeriod || "N/A"}
             </p>
             <p>
-              <strong>Source:</strong> {application.heardFrom || application.source || "N/A"}
+              <strong>Source:</strong>{" "}
+              {application.heardFrom || application.source || "N/A"}
             </p>
             <p>
-              <strong>Referral:</strong> {application.referralName || application.referral || "N/A"}
+              <strong>Referral:</strong>{" "}
+              {application.referralName || application.referral || "N/A"}
             </p>
             <p>
-              <strong>Applied At:</strong> {new Date(application.createdAt).toLocaleString()}
+              <strong>Applied At:</strong>{" "}
+              {new Date(application.createdAt).toLocaleString()}
             </p>
           </div>
 
@@ -154,7 +160,12 @@ export function ApplicationDetailsClient({
             <p className="text-sm font-medium">Resume</p>
             {resumeHref ? (
               <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
-                <a className="underline" href={resumeHref} target="_blank" rel="noreferrer">
+                <a
+                  className="underline"
+                  href={resumeHref}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Open
                 </a>
                 <a className="underline" href={resumeHref} download>
@@ -195,7 +206,9 @@ export function ApplicationDetailsClient({
                   <li key={`${item}-${index}`}>{item}</li>
                 ))
               ) : (
-                <li className="text-[var(--color-muted)]">No internal notes yet.</li>
+                <li className="text-[var(--color-muted)]">
+                  No internal notes yet.
+                </li>
               )}
             </ul>
           </div>

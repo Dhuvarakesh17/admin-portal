@@ -239,7 +239,8 @@ export function JobEditor({
               </div>
             </div>
             <p className="text-xs text-[var(--color-muted)]">
-              Display preview: {formatLpaRange(form.salaryMinLpa, form.salaryMaxLpa)}
+              Display preview:{" "}
+              {formatLpaRange(form.salaryMinLpa, form.salaryMaxLpa)}
             </p>
             <Input
               type="number"
