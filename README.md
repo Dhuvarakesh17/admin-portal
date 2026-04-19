@@ -147,6 +147,15 @@ Optional applications column overrides (when your table names differ):
 - `SUPABASE_APPLICATIONS_UPDATED_BY_COLUMN`
 - `SUPABASE_APPLICATIONS_UPDATED_AT_COLUMN`
 
+Optional pipeline email action settings:
+
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `PIPELINE_EMAIL_REPLY_TO` (optional)
+
+When configured, application pipeline actions in the admin detail page can send shortlist, rejection, and interview emails through Resend.
+If your sending domain is not verified yet, the helper falls back to `onboarding@resend.dev`.
+
 Expected columns in `jobs` table:
 
 - `id` (uuid/text)

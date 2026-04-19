@@ -88,6 +88,48 @@ function getUpdatedAtColumn() {
   return process.env.SUPABASE_APPLICATIONS_UPDATED_AT_COLUMN ?? "updated_at";
 }
 
+function getMissingColumnFromErrorMessage(message: string) {
+  const match = message.match(/Could not find the '([^']+)' column/i);
+  return match?.[1];
+}
+
+async function updateApplicationsWithFallback<T>(
+  table: string,
+  buildQuery: (payload: Record<string, unknown>) => Promise<{
+    data: T | null;
+    error: { code?: string; message: string } | null;
+  }>,
+  initialPayload: Record<string, unknown>,
+) {
+  const payload = { ...initialPayload };
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const result = await buildQuery(payload);
+
+    if (!result.error) {
+      return result.data;
+    }
+
+    const missingColumn = getMissingColumnFromErrorMessage(
+      result.error.message,
+    );
+    if (missingColumn && missingColumn in payload) {
+      delete payload[missingColumn];
+      continue;
+    }
+
+    if (result.error.code === "PGRST116") {
+      return null;
+    }
+
+    throw new Error(result.error.message);
+  }
+
+  throw new Error(
+    `Unable to update ${table} with the configured Supabase schema`,
+  );
+}
+
 function pickValue<T>(
   row: Record<string, unknown>,
   keys: string[],
@@ -409,8 +451,12 @@ export async function updateApplicationStatus(
     const payload: Record<string, unknown> = {
       [getStatusColumn()]: input.status,
       [getUpdatedByColumn()]: actor,
-      [getUpdatedAtColumn()]: updatedAt,
     };
+
+    const updatedAtColumn = getUpdatedAtColumn();
+    if (updatedAtColumn) {
+      payload[updatedAtColumn] = updatedAt;
+    }
 
     if (input.assigneeId !== undefined) {
       payload[getAssigneeColumn()] = input.assigneeId;
@@ -421,19 +467,22 @@ export async function updateApplicationStatus(
       payload[getCommentsColumn()] = comments;
     }
 
-    const { data, error } = await supabase
-      .from(getApplicationsTable())
-      .update(payload)
-      .eq("id", id)
-      .select("*")
-      .single();
+    const data = await updateApplicationsWithFallback(
+      getApplicationsTable(),
+      async (currentPayload) => {
+        const { data, error } = await supabase
+          .from(getApplicationsTable())
+          .update(currentPayload)
+          .eq("id", id)
+          .select("*")
+          .single();
 
-    if (error) {
-      if (error.code === "PGRST116") return null;
-      throw new Error(error.message);
-    }
+        return { data: data as Record<string, unknown> | null, error };
+      },
+      payload,
+    );
 
-    return mapRowToApplication(data as Record<string, unknown>);
+    return data ? mapRowToApplication(data as Record<string, unknown>) : null;
   }
 
   const updated: CandidateApplication = {
@@ -463,19 +512,30 @@ export async function bulkUpdateApplicationStatus(
   }
 
   if (supabase) {
-    const { data, error } = await supabase
-      .from(getApplicationsTable())
-      .update({
-        [getStatusColumn()]: status,
-        [getUpdatedByColumn()]: actor,
-        [getUpdatedAtColumn()]: new Date().toISOString(),
-      })
-      .in("id", ids)
-      .select("*");
+    const updatedAt = new Date().toISOString();
+    const payload: Record<string, unknown> = {
+      [getStatusColumn()]: status,
+      [getUpdatedByColumn()]: actor,
+    };
 
-    if (error) {
-      throw new Error(error.message);
+    const updatedAtColumn = getUpdatedAtColumn();
+    if (updatedAtColumn) {
+      payload[updatedAtColumn] = updatedAt;
     }
+
+    const data = await updateApplicationsWithFallback(
+      getApplicationsTable(),
+      async (currentPayload) => {
+        const { data, error } = await supabase
+          .from(getApplicationsTable())
+          .update(currentPayload)
+          .in("id", ids)
+          .select("*");
+
+        return { data: data as Record<string, unknown>[] | null, error };
+      },
+      payload,
+    );
 
     return {
       updated: (data ?? []).length,

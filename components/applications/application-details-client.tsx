@@ -68,25 +68,13 @@ export function ApplicationDetailsClient({
     }
   }
 
-  async function triggerEmail(type: "shortlist" | "rejection" | "interview") {
-    try {
-      await apiFetch(`/api/applications/${applicationId}/status`, {
-        method: "POST",
-        body: JSON.stringify({ status, emailAction: type }),
-      });
-      toast.success(`${type} email triggered`);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Email trigger failed",
-      );
-    }
-  }
-
   if (!application) {
     return <Card>Loading application...</Card>;
   }
 
-  const resumeHref = application.resumeUrl || application.resumePath;
+  const hasResume = Boolean(application.resumeUrl || application.resumePath);
+  const openResumeHref = `/api/applications/${applicationId}/resume`;
+  const downloadResumeHref = `${openResumeHref}?download=1`;
 
   return (
     <div>
@@ -158,17 +146,17 @@ export function ApplicationDetailsClient({
 
           <div className="mt-4 rounded-lg border border-[var(--color-border)] p-3">
             <p className="text-sm font-medium">Resume</p>
-            {resumeHref ? (
+            {hasResume ? (
               <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
                 <a
                   className="underline"
-                  href={resumeHref}
+                  href={openResumeHref}
                   target="_blank"
                   rel="noreferrer"
                 >
                   Open
                 </a>
-                <a className="underline" href={resumeHref} download>
+                <a className="underline" href={downloadResumeHref}>
                   Download
                 </a>
                 <span className="text-xs text-[var(--color-muted)] break-all">
@@ -243,24 +231,6 @@ export function ApplicationDetailsClient({
           />
           <div className="mt-3 flex flex-wrap gap-2">
             <Button onClick={updateStatus}>Update Status</Button>
-            <Button
-              variant="secondary"
-              onClick={() => triggerEmail("shortlist")}
-            >
-              Shortlist Email
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => triggerEmail("rejection")}
-            >
-              Rejection Email
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => triggerEmail("interview")}
-            >
-              Interview Invite
-            </Button>
           </div>
         </Card>
       </div>

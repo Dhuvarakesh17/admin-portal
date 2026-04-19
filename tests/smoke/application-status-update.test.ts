@@ -61,4 +61,39 @@ describe("application status route", () => {
       "admin@test.com",
     );
   });
+
+  it("ignores emailAction and still updates status", async () => {
+    updateApplicationStatusMock.mockResolvedValueOnce({
+      id: "a1",
+      status: "shortlisted",
+    });
+    const route = await import("@/app/api/applications/[id]/status/route");
+
+    const request = new Request(
+      "http://localhost:3000/api/applications/a1/status",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          status: "shortlisted",
+          emailAction: "shortlist",
+        }),
+      },
+    );
+
+    const response = await route.POST(request, {
+      params: Promise.resolve({ id: "a1" }),
+    });
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(updateApplicationStatusMock).toHaveBeenCalledWith(
+      "a1",
+      expect.objectContaining({
+        status: "shortlisted",
+        emailAction: "shortlist",
+      }),
+      "admin@test.com",
+    );
+  });
 });
