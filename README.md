@@ -1,36 +1,193 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JB Portal Admin Application
 
-## Getting Started
+Simple Next.js admin console for basic job management.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js 16 App Router
+- TypeScript
+- Tailwind CSS v4
+- Secure server-side route handlers as integration layer
+- Zod for validation
+- Vitest smoke tests
+
+## What This App Delivers
+
+### Authentication
+
+- Admin login at `/login` with one local admin account.
+- Signed cookie session using JWT (`httpOnly`, `sameSite=strict`, secure in production).
+- Route protection for app pages via `proxy.ts`.
+- Logout flow via `/api/auth/logout`.
+
+### Core Module
+
+- Jobs management (`/jobs`, `/jobs/new`, `/jobs/[id]/edit`)
+
+### Simple Defaults
+
+- Jobs use Supabase when configured; otherwise they fall back to in-memory storage.
+- No separate backend API is required for login or job management.
+- Strict security headers remain at the proxy level.
+
+### Developer Foundations
+
+- Feature-based app structure and reusable UI components.
+- Shared model types for Job and Session user.
+- Simple local route handlers for login and job CRUD.
+- Smoke tests for auth guard and jobs CRUD routes.
+
+## Folder Structure
+
+```text
+app/
+  (auth)/login
+  (admin)/jobs
+  api/
+    auth/
+    jobs/
+components/
+  auth/
+  jobs/
+  layout/
+  ui/
+lib/
+  auth/
+  types/
+  validation/
+  storage/
+tests/smoke/
+proxy.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy `.env.example` to `.env.local` and set real secrets.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Required:
 
-## Learn More
+- `ADMIN_SESSION_SECRET`
+- `ADMIN_SIMPLE_LOGIN_EMAIL`
+- `ADMIN_SIMPLE_LOGIN_PASSWORD`
 
-To learn more about Next.js, take a look at the following resources:
+Optional:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `ADMIN_SIMPLE_LOGIN_NAME` (defaults to `Admin`)
+- `SUPABASE_URL` (enables database mode)
+- `SUPABASE_SERVICE_ROLE_KEY` (server-side key for jobs CRUD)
+- `SUPABASE_JOBS_TABLE` (defaults to `jobs`)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Local Setup
 
-## Deploy on Vercel
+1. Install dependencies:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm install
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. Configure environment:
+
+```bash
+cp .env.example .env.local
+# then edit .env.local with real values
+```
+
+3. Start dev server:
+
+```bash
+npm run dev -- --port 3001
+```
+
+4. Open:
+
+- `http://localhost:3001/login`
+
+### Quick Local Login
+
+Add to `.env.local`:
+
+```bash
+ADMIN_SIMPLE_LOGIN_EMAIL=admin@test.com
+ADMIN_SIMPLE_LOGIN_PASSWORD=Admin@12345
+ADMIN_SIMPLE_LOGIN_NAME=Local Admin
+```
+
+Then sign in at `/login` with:
+
+- Email: `admin@test.com`
+- Password: `Admin@12345`
+
+### Supabase Jobs Mode
+
+Add these to `.env.local` to persist jobs in Supabase:
+
+```bash
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_JOBS_TABLE=jobs
+SUPABASE_APPLICATIONS_TABLE=applications
+SUPABASE_SYNC_REQUIRED=true
+SUPABASE_JOBS_UPSERT_ON_CREATE=true
+SUPABASE_JOBS_UPSERT_CONFLICT_COLUMN=slug
+```
+
+Sync behavior with existing tables:
+
+- Create job uses `upsert` by conflict column (default `slug`) so existing job rows are updated instead of duplicated.
+- Update/publish/remove operate by `id`.
+- Applications list/details/status/bulk-status read/write directly to `SUPABASE_APPLICATIONS_TABLE`.
+- If `SUPABASE_SYNC_REQUIRED=true` and Supabase env vars are missing, API returns errors instead of silently using local memory.
+
+Optional applications column overrides (when your table names differ):
+
+- `SUPABASE_APPLICATIONS_STATUS_COLUMN`
+- `SUPABASE_APPLICATIONS_ASSIGNEE_COLUMN`
+- `SUPABASE_APPLICATIONS_NOTES_COLUMN`
+- `SUPABASE_APPLICATIONS_COMMENTS_COLUMN`
+- `SUPABASE_APPLICATIONS_UPDATED_BY_COLUMN`
+- `SUPABASE_APPLICATIONS_UPDATED_AT_COLUMN`
+
+Expected columns in `jobs` table:
+
+- `id` (uuid/text)
+- `title`, `slug`, `description`, `department`, `location`, `experience`
+- `responsibilities` (text[] or json array)
+- `requirements` (text[] or json array)
+- `skills` (text[] or json array)
+- `work_mode`, `employment_type`, `status`
+- `salary_min`, `salary_max`, `salary_currency`
+- `openings`, `archived_at`, `created_at`, `updated_at`, `updated_by`
+
+## Build, Test, Lint
+
+```bash
+npm run lint
+npm test
+npm run build
+```
+
+## Production Checklist
+
+- Set a strong `ADMIN_SESSION_SECRET`.
+- Set `ADMIN_SIMPLE_LOGIN_EMAIL` and `ADMIN_SIMPLE_LOGIN_PASSWORD`.
+- Ensure TLS and secure cookies are enabled in production.
+- Keep the app behind your preferred access controls.
+
+## Smoke Tests Included
+
+- `tests/smoke/auth-guard.test.ts`
+- `tests/smoke/jobs-crud.test.ts`
+
+## Implemented Features vs Pending Enhancements
+
+### Implemented
+
+- Secure login/session/logout flow.
+- Single-admin route protection.
+- Jobs list, filtering, sorting, pagination, create/edit, publish/unpublish, duplicate, remove.
+- Supabase-backed jobs persistence (with in-memory fallback when Supabase is not configured).
+- Reusable data table, filter bar, pagination, confirmation modal, and UI states.
+
+### Pending Enhancements
+
+- Rich text editor for job descriptions.
