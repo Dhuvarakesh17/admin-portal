@@ -19,6 +19,6 @@ export async function requireApiSession(
   return { ok: true, user: session };
 }
 
-export async function requireMutationProtection() {
+export async function requireMutationProtection(_request?: Request) {
   return null;
 }
