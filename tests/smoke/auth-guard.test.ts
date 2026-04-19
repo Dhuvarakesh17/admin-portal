@@ -30,6 +30,32 @@ describe("auth guard middleware", () => {
     expect(response.status).toBe(200);
   });
 
+  it("allows public jobs api route without session", async () => {
+    const { proxy } = await import("@/proxy");
+    const request = new NextRequest("http://localhost:3000/api/public/jobs");
+
+    const response = await proxy(request);
+    expect(response.status).toBe(200);
+  });
+
+  it("allows public jobs detail api route without session", async () => {
+    const { proxy } = await import("@/proxy");
+    const request = new NextRequest(
+      "http://localhost:3000/api/public/jobs/frontend-engineer",
+    );
+
+    const response = await proxy(request);
+    expect(response.status).toBe(200);
+  });
+
+  it("rejects protected admin api route without session", async () => {
+    const { proxy } = await import("@/proxy");
+    const request = new NextRequest("http://localhost:3000/api/jobs");
+
+    const response = await proxy(request);
+    expect(response.status).toBe(401);
+  });
+
   it("allows authenticated route with valid token", async () => {
     verifyMock.mockResolvedValueOnce({});
     const { proxy } = await import("@/proxy");

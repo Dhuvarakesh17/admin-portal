@@ -177,6 +177,113 @@ npm run build
 
 - `tests/smoke/auth-guard.test.ts`
 - `tests/smoke/jobs-crud.test.ts`
+- `tests/smoke/public-jobs-api.test.ts`
+
+## Public Careers Site Integration
+
+This admin portal now exposes intentionally public, read-only APIs for a separate careers frontend.
+
+### Endpoints
+
+- `GET /api/public/jobs`
+- `OPTIONS /api/public/jobs`
+- `GET /api/public/jobs/:slug`
+- `OPTIONS /api/public/jobs/:slug`
+
+Both endpoints return only active (published) jobs. Draft and closed jobs are excluded.
+
+### List Response
+
+```json
+{
+  "ok": true,
+  "data": {
+    "items": [
+      {
+        "id": "string",
+        "slug": "string",
+        "title": "string",
+        "department": "Technical",
+        "sector": "technical",
+        "team": "",
+        "location": "string",
+        "workMode": "Remote",
+        "experienceLevel": "Mid",
+        "experienceRange": "1-3",
+        "type": "Full-time",
+        "salaryRange": "INR 6,00,000 - INR 9,00,000",
+        "summary": "string",
+        "skills": [],
+        "postedDaysAgo": 0,
+        "statusTags": ["Active"],
+        "openings": 1,
+        "responsibilities": [],
+        "requiredQualifications": [],
+        "aboutRole": [],
+        "niceToHave": [],
+        "perks": [],
+        "interviewProcess": []
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+### Detail Response
+
+```json
+{
+  "ok": true,
+  "data": {
+    "id": "string",
+    "slug": "string",
+    "title": "string",
+    "department": "Technical",
+    "sector": "technical",
+    "team": "",
+    "location": "string",
+    "workMode": "Remote",
+    "experienceLevel": "Mid",
+    "experienceRange": "1-3",
+    "type": "Full-time",
+    "salaryRange": "Salary based on experience",
+    "summary": "string",
+    "skills": [],
+    "postedDaysAgo": 0,
+    "statusTags": ["Active"],
+    "openings": 1,
+    "responsibilities": [],
+    "requiredQualifications": [],
+    "aboutRole": [],
+    "niceToHave": [],
+    "perks": [],
+    "interviewProcess": []
+  }
+}
+```
+
+### Required Environment Variable
+
+- `ADMIN_ALLOWED_ORIGINS` (comma-separated origins)
+
+If the incoming `Origin` is in the allowlist, the API sets `Access-Control-Allow-Origin` to that exact origin with `Vary: Origin`.
+The API always returns:
+
+- `Access-Control-Allow-Methods: GET,OPTIONS`
+- `Access-Control-Allow-Headers: Content-Type`
+- `Access-Control-Max-Age: 86400`
+
+### Curl Examples
+
+```bash
+curl -i https://your-admin-domain/api/public/jobs
+curl -i https://your-admin-domain/api/public/jobs/frontend-engineer
+curl -i -X OPTIONS https://your-admin-domain/api/public/jobs \
+  -H "Origin: https://creinx-careers.vercel.app"
+curl -i -X OPTIONS https://your-admin-domain/api/public/jobs/frontend-engineer \
+  -H "Origin: https://creinx-careers.vercel.app"
+```
 
 ## Implemented Features vs Pending Enhancements
 

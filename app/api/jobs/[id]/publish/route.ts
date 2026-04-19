@@ -25,7 +25,7 @@ export async function POST(
     }
 
     return ok(job);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { ok: false, error: { message: "Unable to update job status" } },
       { status: 500 },

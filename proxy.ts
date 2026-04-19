@@ -19,8 +19,11 @@ async function isValidSession(token: string) {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApiRoute = pathname.startsWith("/api");
+  const isPublicJobsApi = pathname.startsWith("/api/public/jobs");
   const isPublicRoute =
-    pathname === APP_ROUTES.login || pathname.startsWith("/api/auth");
+    pathname === APP_ROUTES.login ||
+    pathname.startsWith("/api/auth") ||
+    isPublicJobsApi;
 
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const authenticated = token ? await isValidSession(token) : false;

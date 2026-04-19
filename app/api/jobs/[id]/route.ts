@@ -19,7 +19,7 @@ export async function GET(
       return fail("Job not found", 404);
     }
     return ok(job);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { ok: false, error: { message: "Unable to load job" } },
       { status: 500 },
@@ -50,7 +50,7 @@ export async function PUT(
     }
 
     return ok(job);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { ok: false, error: { message: "Unable to update job" } },
       { status: 500 },

@@ -19,7 +19,7 @@ export async function POST(
     }
 
     return ok(job, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { ok: false, error: { message: "Unable to duplicate job" } },
       { status: 500 },

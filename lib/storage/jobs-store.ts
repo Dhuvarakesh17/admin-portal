@@ -166,7 +166,9 @@ function normalizeEmploymentTypeForWrite(value: string) {
 }
 
 function normalizeEmploymentTypeFromRow(value: unknown): Job["employmentType"] {
-  const normalized = String(value ?? "").trim().toLowerCase();
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase();
   const mapping: Record<string, Job["employmentType"]> = {
     "full-time": "full_time",
     full_time: "full_time",
@@ -415,6 +417,32 @@ export async function getJob(id: string) {
   }
 
   return jobs.find((job) => job.id === id) ?? null;
+}
+
+export async function getJobBySlug(slug: string) {
+  const supabase = getSupabaseClient();
+  if (!supabase && isSupabaseSyncRequired()) {
+    throw new Error(
+      "Supabase sync is required but SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY are missing.",
+    );
+  }
+
+  if (supabase) {
+    const { data, error } = await supabase
+      .from(getJobsTable())
+      .select("*")
+      .eq("slug", slug)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") return null;
+      throw new Error(error.message);
+    }
+
+    return mapRowToJob(data);
+  }
+
+  return jobs.find((job) => job.slug === slug) ?? null;
 }
 
 export async function createJob(

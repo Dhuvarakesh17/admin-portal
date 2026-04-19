@@ -19,7 +19,7 @@ export async function POST(
     }
 
     return ok({ removed: true, job });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { ok: false, error: { message: "Unable to remove job" } },
       { status: 500 },
